@@ -2,6 +2,7 @@ import { expect, test } from "bun:test"
 import "./parity/prepare-upstream"
 import { compileCircuitJson } from "../lib"
 import type { Point } from "../lib/types"
+import type { CircuitJson } from "../lib"
 import { drawKeepout } from "../lib/draw-keepout"
 import {
   ellipse,
@@ -13,6 +14,7 @@ import { fixtures, silkscreenGraphics } from "../site/fixtures"
 import large from "./fixtures/am3352-dev-board.circuit.json"
 import breakout from "./fixtures/f1c100s-breakout.circuit.json"
 import museSockets from "./fixtures/muse-socket-plated-holes.circuit.json"
+import pcbBend from "./fixtures/pcb-bend.circuit.json"
 
 function area(mesh: ReturnType<MeshBuilder["build"]>) {
   let area = 0
@@ -219,6 +221,16 @@ test("invalid interpolated widths retain a diagnostic and never emit nonfinite g
     expect(scene.diagnostics).toHaveLength(1)
     expect(scene.triangleCount).toBe(0)
   }
+})
+
+test("PCB bends leave board geometry unchanged without diagnostics", () => {
+  const scene = compileCircuitJson(pcbBend as CircuitJson)
+  const boardsOnly = compileCircuitJson(
+    pcbBend.filter((element) => element.type !== "pcb_bend") as CircuitJson,
+  )
+  expect(scene.diagnostics).toEqual([])
+  expect(scene.layers).toEqual(boardsOnly.layers)
+  expect(scene.triangleCount).toBe(boardsOnly.triangleCount)
 })
 
 test("through-pad layer transitions connect each wire to its pad anchor", () => {
