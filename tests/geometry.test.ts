@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test"
 import "./parity/prepare-upstream"
 import { compileCircuitJson } from "../lib"
+import type { Point } from "../lib/types"
 import { drawKeepout } from "../lib/draw-keepout"
 import {
   ellipse,
@@ -25,21 +26,27 @@ function area(mesh: ReturnType<MeshBuilder["build"]>) {
   return area
 }
 
-function meshCovers(
-  mesh: ReturnType<MeshBuilder["build"]>,
-  x: number,
-  y: number,
-) {
+function cross({ a, b, c }: { a: Point; b: Point; c: Point }) {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
+}
+
+function meshCovers({
+  mesh,
+  x,
+  y,
+}: { mesh: ReturnType<MeshBuilder["build"]>; x: number; y: number }) {
   for (let i = 0; i < mesh.indices.length; i += 3) {
     const [a, b, c] = [...mesh.indices.slice(i, i + 3)].map((index) => ({
       x: mesh.vertices[index * 8],
       y: mesh.vertices[index * 8 + 1],
     }))
-    const cross = (p: typeof a, q: typeof a, r: typeof a) =>
-      (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x)
-    if (cross(a, b, c) === 0) continue
+    if (cross({ a, b, c }) === 0) continue
     const point = { x, y }
-    const sides = [cross(a, b, point), cross(b, c, point), cross(c, a, point)]
+    const sides = [
+      cross({ a, b, c: point }),
+      cross({ a: b, b: c, c: point }),
+      cross({ a: c, b: a, c: point }),
+    ]
     if (sides.every((side) => side >= 0) || sides.every((side) => side <= 0))
       return true
   }
@@ -81,8 +88,8 @@ test("interpolated traces use both vertex widths with flat ends and no duplicate
     expect(area(mesh)).toBeCloseTo(8)
     expect(meshBounds(mesh)).toEqual([0, 4, -1.5, 1.5])
     // Half-width grows from 0.5 to 1.5: it is 0.75 at x=1 and 1.25 at x=3.
-    expect(meshCovers(mesh, 1, 0.8)).toBe(false)
-    expect(meshCovers(mesh, 3, 1)).toBe(true)
+    expect(meshCovers({ mesh, x: 1, y: 0.8 })).toBe(false)
+    expect(meshCovers({ mesh, x: 3, y: 1 })).toBe(true)
     expect(
       [...mesh.vertices]
         .filter((_, i) => i % 8 === 6)
@@ -156,11 +163,11 @@ test("interpolated runs stop at layer changes and preserve via and through-pad c
     const top = scene.layers.find((layer) => layer.name === "top")!.paint
     const bottom = scene.layers.find((layer) => layer.name === "bottom")!.paint
     // Sample the gaps between each interpolated run and the transition anchor.
-    expect(meshCovers(top, 4.5, 0)).toBe(true)
-    expect(meshCovers(bottom, 9, 0)).toBe(true)
+    expect(meshCovers({ mesh: top, x: 4.5, y: 0 })).toBe(true)
+    expect(meshCovers({ mesh: bottom, x: 9, y: 0 })).toBe(true)
     if (transition.route_type === "through_pad") {
-      expect(meshCovers(top, 6, 0)).toBe(true)
-      expect(meshCovers(bottom, 6, 0)).toBe(true)
+      expect(meshCovers({ mesh: top, x: 6, y: 0 })).toBe(true)
+      expect(meshCovers({ mesh: bottom, x: 6, y: 0 })).toBe(true)
     }
     expect(
       meshBounds(scene.layers.find((layer) => layer.name === "top")!.paint)[1],

@@ -353,23 +353,27 @@ function buildTracePolygon(points) {
 function getInterpolatedWireRuns(route) {
   const runs = [];
   let run = [];
-  const flush = () => {
-    if (run.length >= 2) runs.push(run);
-    run = [];
-  };
   for (const point of route) {
     if (point.route_type !== "wire") {
-      flush();
+      run = flushInterpolatedWireRun({ run, runs });
       continue;
     }
     if (![point.x, point.y, point.width].every(Number.isFinite) || point.width < 0)
       throw new Error("Invalid interpolated trace coordinates or width");
-    if (run.length && run[0].layer !== point.layer) flush();
+    if (run.length && run[0].layer !== point.layer)
+      run = flushInterpolatedWireRun({ run, runs });
     run.push(point);
-    if (hasWireTaper(point)) flush();
+    if (hasWireTaper(point)) run = flushInterpolatedWireRun({ run, runs });
   }
-  flush();
+  flushInterpolatedWireRun({ run, runs });
   return runs;
+}
+function flushInterpolatedWireRun({
+  run,
+  runs
+}) {
+  if (run.length >= 2) runs.push(run);
+  return [];
 }
 
 // lib/colors.ts

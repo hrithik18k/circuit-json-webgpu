@@ -5,13 +5,9 @@ import { hasWireTaper } from "./get-wire-taper-polygon"
 export function getInterpolatedWireRuns(route: PcbTrace["route"]) {
   const runs: PcbTraceRoutePointWire[][] = []
   let run: PcbTraceRoutePointWire[] = []
-  const flush = () => {
-    if (run.length >= 2) runs.push(run)
-    run = []
-  }
   for (const point of route) {
     if (point.route_type !== "wire") {
-      flush()
+      run = flushInterpolatedWireRun({ run, runs })
       continue
     }
     if (
@@ -19,11 +15,23 @@ export function getInterpolatedWireRuns(route: PcbTrace["route"]) {
       point.width < 0
     )
       throw new Error("Invalid interpolated trace coordinates or width")
-    if (run.length && run[0].layer !== point.layer) flush()
+    if (run.length && run[0].layer !== point.layer)
+      run = flushInterpolatedWireRun({ run, runs })
     run.push(point)
     // Incoming interpolation may end here; this point's outgoing copper is a taper.
-    if (hasWireTaper(point)) flush()
+    if (hasWireTaper(point)) run = flushInterpolatedWireRun({ run, runs })
   }
-  flush()
+  flushInterpolatedWireRun({ run, runs })
   return runs
+}
+
+function flushInterpolatedWireRun({
+  run,
+  runs,
+}: {
+  run: PcbTraceRoutePointWire[]
+  runs: PcbTraceRoutePointWire[][]
+}): PcbTraceRoutePointWire[] {
+  if (run.length >= 2) runs.push(run)
+  return []
 }
