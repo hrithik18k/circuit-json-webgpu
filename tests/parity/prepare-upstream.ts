@@ -4,7 +4,9 @@ import { dirname, resolve } from "node:path"
 import { createRequire } from "node:module"
 
 const require = createRequire(import.meta.url)
-const installed = dirname(require.resolve("circuit-to-canvas/package.json"))
+const installed = dirname(
+  require.resolve("circuit-to-canvas-reference/package.json"),
+)
 const target = fileURLToPath(
   new URL("../upstream/circuit-to-canvas/", import.meta.url),
 )
