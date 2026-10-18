@@ -68,7 +68,7 @@
     "looks-same": "^10.0.1",
     "schematic-symbols": "^0.0.202",
     "transformation-matrix": "^3.1.0",
-    "circuit-to-canvas": "github:hrithik18k/circuit-to-canvas#d1be19357c7aec157e231b74711f5032ead09f45",
+    "circuit-to-canvas": "github:hrithik18k/circuit-to-canvas#3169a7d020557df536533767b0eaf5abf117a247",
     "circuit-to-canvas-reference": "github:tscircuit/circuit-to-canvas#fa8405c67634e287b79a1506eedde077ef6accb0"
   },
   "trustedDependencies": ["circuit-to-canvas"],
