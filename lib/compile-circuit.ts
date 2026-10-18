@@ -4,6 +4,9 @@ import {
   hasWireTaper,
 } from "./get-wire-taper-polygon"
 import { drawKeepout } from "./draw-keepout"
+// The Git-pinned Canvas revision has no public polygon-builder export. This
+// DOM-free helper is bundled by tsup, so consumers need no Canvas package.
+// Its source and direction helpers are hash-checked by upstream-integrity.test.ts.
 import { buildTracePolygon } from "circuit-to-canvas/lib/drawer/elements/pcb-trace/build-trace-polygon"
 import { getInterpolatedWireRuns } from "./get-interpolated-wire-runs"
 import { drawPcbDimension } from "./pcb-dimension/draw-pcb-dimension"
