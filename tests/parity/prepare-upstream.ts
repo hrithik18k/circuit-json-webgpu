@@ -30,3 +30,12 @@ const schemaLink = resolve(target, "node_modules/circuit-json")
 mkdirSync(dirname(schemaLink), { recursive: true })
 rmSync(schemaLink, { recursive: true, force: true })
 symlinkSync(referenceSchema, schemaLink, "dir")
+
+// Keep the reference camera geometry on its original utility implementation.
+const referenceUtil = dirname(
+  require.resolve("circuit-json-util-reference/package.json"),
+)
+const utilLink = resolve(target, "node_modules/@tscircuit/circuit-json-util")
+mkdirSync(dirname(utilLink), { recursive: true })
+rmSync(utilLink, { recursive: true, force: true })
+symlinkSync(referenceUtil, utilLink, "dir")

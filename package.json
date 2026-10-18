@@ -51,6 +51,7 @@
     "@webgpu/types": "^0.1.64",
     "circuit-json": "^0.0.522",
     "circuit-json-reference": "npm:circuit-json@0.0.501",
+    "circuit-json-util-reference": "npm:@tscircuit/circuit-json-util@0.0.99",
     "pixelmatch": "^7.1.0",
     "playwright": "1.63.0",
     "pngjs": "^7.0.0",
