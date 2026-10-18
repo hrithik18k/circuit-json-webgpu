@@ -6,15 +6,16 @@ import type { CircuitJson } from "./types"
 const DEFAULT_VIA_HOLE_DIAMETER = 0.25
 const DEFAULT_VIA_OUTER_DIAMETER = 0.6
 
+type ViaPositionKey = string
+
 /** Materialize route vias without mutating the input or duplicating explicit vias. */
 export function getTraceVias(elements: CircuitJson) {
   const owners = createBoardOwnerMap([...elements])
-  const viasByPosition = new Map<string, PcbVia[]>()
-  const positionKey = (id: string, x: number, y: number) =>
-    `${owners.get(id)?.pcb_board_id ?? ""}:${x}:${y}`
+  const viasByPosition = new Map<ViaPositionKey, PcbVia[]>()
   for (const element of elements) {
     if (element.type !== "pcb_via") continue
-    const key = positionKey(element.pcb_via_id, element.x, element.y)
+    const board = owners.get(element.pcb_via_id)
+    const key = `${board?.pcb_board_id ?? ""}:${element.x}:${element.y}`
     const vias = viasByPosition.get(key) ?? []
     vias.push(element)
     viasByPosition.set(key, vias)
@@ -26,7 +27,7 @@ export function getTraceVias(elements: CircuitJson) {
     const board = owners.get(trace.pcb_trace_id)
     for (const [routeIndex, point] of trace.route.entries()) {
       if (point.route_type !== "via") continue
-      const key = positionKey(trace.pcb_trace_id, point.x, point.y)
+      const key = `${board?.pcb_board_id ?? ""}:${point.x}:${point.y}`
       const vias = viasByPosition.get(key) ?? []
       if (
         vias.some(
