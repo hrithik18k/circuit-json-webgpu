@@ -30,6 +30,8 @@ function shape(e: Element, hole = false): Point[][] {
     )
   if (e.outline?.length) return [e.outline]
   if (e.shape === "hole_with_polygon_pad" && !hole) {
+    // The reference renderer treats pad_outline as already-oriented offsets
+    // from (x, y); ccw_rotation is not applied to the polygon again.
     const c = center(e)
     return [e.pad_outline.map((p: Point) => ({ x: c.x + p.x, y: c.y + p.y }))]
   }
