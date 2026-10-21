@@ -720,17 +720,17 @@ try {
     }
     if (name === "note-rectangle-disabled-stroke") {
       assert.deepEqual(
-        at(302, 272),
+        at(260, 260),
         [89, 148, 220],
         "The enabled-stroke control has an outline",
       )
       assert.deepEqual(
-        at(498, 272),
+        at(540, 260),
         [89, 148, 220],
         "Repro: has_stroke=false still draws the right outline",
       )
       assert.deepEqual(
-        at(498, 300),
+        at(540, 300),
         [0, 0, 0],
         "The disabled-fill interior remains empty",
       )

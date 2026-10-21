@@ -421,7 +421,11 @@ export const fixtures: Record<string, Fixture> = {
         anchor_position: { x: 0, y: -5 },
       },
     ],
-    options: { showPcbNotes: true, hiddenLayerOpacity: 0 },
+    options: {
+      showPcbNotes: true,
+      hiddenLayerOpacity: 0,
+      transform: { a: 20, b: 0, c: 0, d: -20, e: 400, f: 300 },
+    },
   },
 
   "silkscreen-text-over-holes": {
