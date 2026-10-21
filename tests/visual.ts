@@ -678,10 +678,6 @@ try {
       name,
     )
     assert.deepEqual(stats.diagnostics, [])
-    if (name === "note-rectangle-disabled-stroke")
-      await page.locator("canvas").screenshot({
-        path: "tests/actual/note-rectangle-disabled-stroke.png",
-      })
     const image = await snapshot(name)
     // Independent checks: a board cutout uses the pink drill color; a pour hole
     // reveals the board/bottom copper rather than red top-layer copper.
