@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { readFile, writeFile, mkdir } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { createServer } from "vite"
-import { chromium } from "playwright"
+import { launchWebGpuBrowser } from "../scripts/lib/launch-webgpu-browser"
 import { PNG } from "pngjs"
 import { Resvg } from "@resvg/resvg-js"
 import { createCanvas } from "@napi-rs/canvas"
@@ -30,25 +30,7 @@ const server = await createServer({
 await server.listen()
 let browser
 try {
-  browser = await chromium.launch({
-    headless: true,
-    args: [
-      "--enable-unsafe-webgpu",
-      ...(process.env.WEBGPU_SOFTWARE
-        ? [
-            "--enable-gpu",
-            "--use-angle=swiftshader",
-            "--use-vulkan=swiftshader",
-            "--enable-features=Vulkan",
-            "--enable-unsafe-swiftshader",
-            "--ignore-gpu-blocklist",
-          ]
-        : []),
-    ],
-    ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
-      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE }
-      : {}),
-  })
+  browser = await launchWebGpuBrowser()
   const page = await browser.newPage({
     viewport: { width: 900, height: 800 },
     deviceScaleFactor: 1,
@@ -64,7 +46,8 @@ try {
       console.error(m.text())
     }
   })
-  await page.goto(server.resolvedUrls!.local[0])
+  const siteUrl = server.resolvedUrls!.local[0]
+  await page.goto(siteUrl)
   await page.waitForFunction(() => window.gpuTest, null, { timeout: 30000 })
   const visibility = await page.evaluate(() =>
     window.gpuTest.checkBoardVisibility(),
@@ -735,6 +718,43 @@ try {
         "Keepouts must remain visible above a later copper pour",
       )
     }
+    if (name === "silkscreen-text-over-holes") {
+      assert.deepEqual(
+        at(288, 300),
+        [242, 237, 161],
+        "Top silkscreen text must stay above the unplated hole",
+      )
+      assert.deepEqual(
+        at(512, 300),
+        [242, 237, 161],
+        "Bottom silkscreen text must stay above the plated hole",
+      )
+      assert.deepEqual(at(288, 286), [255, 38, 226])
+      assert.deepEqual(at(512, 286), [255, 38, 226])
+      const textVisibility = await page.evaluate(() => {
+        const drawer = window.gpuTest.drawer
+        const canvas = document.querySelector("canvas")!
+        drawer.render({ hiddenLayerOpacity: 0.4 })
+        const dimmed = canvas.toDataURL("image/png").split(",")[1]
+        drawer.render({ showSilkscreen: false })
+        return {
+          dimmed,
+          hidden: canvas.toDataURL("image/png").split(",")[1],
+        }
+      })
+      assert.deepEqual(
+        pixel(textVisibility.dimmed, 512, 300),
+        [250, 118, 200, 255],
+      )
+      assert.deepEqual(
+        pixel(textVisibility.hidden, 288, 300),
+        [255, 38, 226, 255],
+      )
+      assert.deepEqual(
+        pixel(textVisibility.hidden, 512, 300),
+        [255, 38, 226, 255],
+      )
+    }
     if (name === "silkscreen-graphics") {
       // World coordinates use the gallery's 14 px/mm camera. Check ink and
       // clear holes independently so snapshot updates cannot fill the counters.
@@ -772,9 +792,21 @@ try {
       assert(at(400, 280)[0] < 100)
     }
   }
+  await page.goto(`${siteUrl}?renderViasInHighDetail=false`)
+  await page.waitForFunction(() => window.gpuTest, null, { timeout: 30000 })
   const large = await page.evaluate(() => window.gpuTest.renderLarge())
   assert.deepEqual(large.diagnostics, [])
   await snapshot("am3352-dev-board")
+  const denseTopVias = await page.evaluate(() =>
+    window.gpuTest.renderDenseVias("top"),
+  )
+  assert.deepEqual(denseTopVias.diagnostics, [])
+  await snapshot("dense-vias-top")
+  const denseInnerVias = await page.evaluate(() =>
+    window.gpuTest.renderDenseVias("inner1"),
+  )
+  assert.deepEqual(denseInnerVias.diagnostics, [])
+  await snapshot("dense-vias-inner")
   const navigation = await page.evaluate(
     async (frameCount) => {
       const drawer = window.gpuTest.drawer,
