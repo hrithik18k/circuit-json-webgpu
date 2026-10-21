@@ -678,6 +678,17 @@ try {
       name,
     )
     assert.deepEqual(stats.diagnostics, [])
+    if (name === "note-rectangle-disabled-stroke")
+      await page
+        .locator("canvas")
+        .screenshot({
+          path: fileURLToPath(
+            new URL(
+              "./actual/note-rectangle-disabled-stroke.png",
+              import.meta.url,
+            ),
+          ),
+        })
     const image = await snapshot(name)
     // Independent checks: a board cutout uses the pink drill color; a pour hole
     // reveals the board/bottom copper rather than red top-layer copper.
@@ -716,6 +727,23 @@ try {
       assert(
         at(540, 300).some((c, i) => c > copper[i] + 20),
         "Keepouts must remain visible above a later copper pour",
+      )
+    }
+    if (name === "note-rectangle-disabled-stroke") {
+      assert.deepEqual(
+        at(302, 272),
+        [89, 148, 220],
+        "The enabled-stroke control has an outline",
+      )
+      assert.deepEqual(
+        at(498, 272),
+        [89, 148, 220],
+        "Repro: has_stroke=false still draws the right outline",
+      )
+      assert.deepEqual(
+        at(498, 300),
+        [0, 0, 0],
+        "The disabled-fill interior remains empty",
       )
     }
     if (name === "silkscreen-graphics") {
