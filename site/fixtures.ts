@@ -1,3 +1,4 @@
+import { rotatedPadDrillOffsets } from "../tests/fixtures/rotated-pad-drill-offsets"
 import fabricationPathFill from "../tests/fixtures/fabrication-path-fill.circuit.json"
 import { teardropDemo } from "./teardrop-demo"
 import type { CircuitJson, RenderOptions } from "../lib"
@@ -356,6 +357,15 @@ export const keepouts = [
 ] as CircuitJson
 
 export const fixtures: Record<string, Fixture> = {
+  "rotated-pad-drill-offsets": {
+    elements: rotatedPadDrillOffsets,
+    options: {
+      selectedLayer: "top",
+      hiddenLayerOpacity: 0,
+      showPcbNotes: true,
+      transform: { a: 25, b: 0, c: 0, d: -25, e: 400, f: 300 },
+    },
+  },
   "silkscreen-text-over-holes": {
     elements: [
       {
