@@ -1,4 +1,5 @@
 import fabricationPathFill from "../tests/fixtures/fabrication-path-fill.circuit.json"
+import airMouse from "../tests/fixtures/air-mouse.circuit.json"
 import { teardropDemo } from "./teardrop-demo"
 import type { CircuitJson, RenderOptions } from "../lib"
 export type Fixture = { elements: CircuitJson; options?: RenderOptions }
@@ -356,6 +357,38 @@ export const keepouts = [
 ] as CircuitJson
 
 export const fixtures: Record<string, Fixture> = {
+  "air-mouse-board-colors": {
+    elements: [
+      ...(airMouse as CircuitJson),
+      {
+        type: "pcb_note_text",
+        pcb_note_text_id: "requested-board-colors",
+        layer: "top",
+        text: "REQUESTED:\nBLUE MASK\nWHITE SILK",
+        font: "tscircuit2024",
+        font_size: 1.8,
+        anchor_alignment: "center",
+        anchor_position: { x: -40, y: 15 },
+      },
+      {
+        type: "pcb_note_text",
+        pcb_note_text_id: "actual-board-colors",
+        layer: "top",
+        text: "ACTUAL:\nGREEN MASK\nYELLOW SILK",
+        font: "tscircuit2024",
+        font_size: 1.8,
+        anchor_alignment: "center",
+        anchor_position: { x: 40, y: 15 },
+      },
+    ],
+    options: {
+      showSolderMask: true,
+      showSilkscreen: true,
+      showPcbNotes: true,
+      hiddenLayerOpacity: 0,
+      transform: { a: 7, b: 0, c: 0, d: -7, e: 400, f: 300 },
+    },
+  },
   "silkscreen-text-over-holes": {
     elements: [
       {
