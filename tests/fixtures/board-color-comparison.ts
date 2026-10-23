@@ -40,7 +40,7 @@ export async function snapshotBoardColorComparison({
     shouldDrawErrors: false,
     shouldDrawRatsNest: false,
     includeVersion: false,
-    drawPaddingOutsideBoard: false,
+    drawPaddingOutsideBoard: true,
     backgroundColor: "#000000",
   })
   // Match the existing bend comparison: Resvg needs the SVG's embedded font
