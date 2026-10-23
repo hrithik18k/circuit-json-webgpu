@@ -15,6 +15,8 @@ import { prepareComparison } from "./parity/prepare"
 import { compose, scale, translate } from "transformation-matrix"
 import type { CircuitJson } from "../lib"
 import pcbBendFixture from "./fixtures/pcb-bend.circuit.json"
+import { fixtures } from "../site/fixtures"
+import { snapshotBoardColorComparison } from "./fixtures/board-color-comparison"
 
 const root = fileURLToPath(new URL("../", import.meta.url))
 const server = await createServer({
@@ -678,6 +680,23 @@ try {
       name,
     )
     assert.deepEqual(stats.diagnostics, [])
+    if (name === "air-mouse-board-colors") {
+      const dimensions = await page.locator("canvas").evaluate((canvas) => ({
+        width: (canvas as HTMLCanvasElement).width,
+        height: (canvas as HTMLCanvasElement).height,
+      }))
+      assert(
+        (
+          await snapshotBoardColorComparison({
+            fixture: fixtures[name],
+            screenshot: await page.locator("canvas").screenshot(),
+            ...dimensions,
+          })
+        ).pass,
+        "Board colors SVG/WebGPU comparison snapshot",
+      )
+      continue
+    }
     const image = await snapshot(name)
     // Independent checks: a board cutout uses the pink drill color; a pour hole
     // reveals the board/bottom copper rather than red top-layer copper.
