@@ -709,22 +709,14 @@ try {
       })
         .render()
         .asPng()
-      const screenshot = PNG.sync.read(
-        await page.locator("canvas").screenshot(),
-      )
-      const gpu = new PNG({ width: scene.width, height: scene.height })
-      // Exclude the gallery canvas's CSS border.
-      PNG.bitblt(
-        screenshot,
-        gpu,
-        (screenshot.width - gpu.width) / 2,
-        (screenshot.height - gpu.height) / 2,
-        gpu.width,
-        gpu.height,
-        0,
-        0,
-      )
-      const gpuPng = PNG.sync.write(gpu).toString("base64")
+      const gpuPng = await page.evaluate(() => {
+        window.gpuTest.drawer.render()
+        return document
+          .querySelector("canvas")!
+          .toDataURL("image/png")
+          .split(",")[1]
+      })
+      const gpu = PNG.sync.read(Buffer.from(gpuPng, "base64"))
       const svgPng = reference.toString("base64")
       // The control drill stays below the pad; the rotated one incorrectly moves above it.
       assert.deepEqual(pixel(gpuPng, 250, 325), [255, 38, 226, 255])
