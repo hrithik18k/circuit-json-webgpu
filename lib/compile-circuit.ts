@@ -1,4 +1,4 @@
-import { buildTracePolygon } from "circuit-to-canvas"
+import { buildTracePolygon } from "@tscircuit/circuit-json-util"
 import { getInterpolatedWireRuns } from "./get-interpolated-wire-runs"
 import {
   getWireTaperPolygon,
